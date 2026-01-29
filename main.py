@@ -1,12 +1,9 @@
-name: Build_APK
-on: [push]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build_Android
-        uses: ArtemSerebrenninkov/buildozer-action@v1
-        with:
-          command: buildozer android debug
-          repository_root: .
+from kivy.app import App
+from kivy.uix.label import Label
+
+class OmElkhir(App):
+    def build(self):
+        return Label(text='OM ELKHIR: System Active\nScanning for Voids...')
+
+if __name__ == '__main__':
+    OmElkhir().run()
