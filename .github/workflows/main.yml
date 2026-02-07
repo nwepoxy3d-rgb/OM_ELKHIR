@@ -1,17 +1,17 @@
 name: Build_APK
 on: [push]
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Build_Android
-       - name: Build with Buildozer
-  id: buildozer
-  with:
-    command: buildozer android debug
-    buildozer_version: stable
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
         with:
           command: buildozer android debug
+          buildozer_version: stable
           repository_root: .
