@@ -7,7 +7,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build_Android
        - name: Build with Buildozer
-  uses: ArtemSBulgakov/buildozer-action@v1
   id: buildozer
   with:
     command: buildozer android debug
