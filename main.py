@@ -1,86 +1,184 @@
-# 1. SETUP ENVIRONMENT & TOOLS
-!sudo apt-get update
-!sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev libtool automake autoconf zlib1g-dev ncurses-dev cmake
-!pip install --upgrade pip
-!pip install Cython==0.29.33 buildozer
+"""
+OM EL KHIR — première base Android
+Application d'aide à l'observation de signes archéologiques à partir de photos.
 
-# 2. MASTER SOURCE CODE (OPTIMIZED FOR PERFORMANCE)
-main_py_content = """
+Cette version permet de tester l'interface, l'aperçu caméra et l'importation
+d'une image. Elle ne prétend pas encore interpréter automatiquement les signes.
+"""
+
 from kivy.app import App
+from kivy.lang import Builder
+from kivy.properties import StringProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.button import Button
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
-from kivy.uix.camera import Camera
-from kivy.uix.filechooser import FileChooserIconView
+from kivy.uix.image import Image
+from kivy.utils import platform
 
-class MenuScreen(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
-        layout.add_widget(Label(text="OM ELKHIR SYSTEM v2.0", font_size='24sp', size_hint_y=0.2))
-        
-        btn_scan = Button(text="OPEN FIELD SCANNER", background_color=(0, 0.8, 0, 1))
-        btn_scan.bind(on_press=self.go_to_scan)
-        
-        btn_load = Button(text="LOAD IMAGE ANALYSIS", background_color=(0, 0.5, 0.8, 1))
-        btn_load.bind(on_press=self.go_to_load)
-        
-        layout.add_widget(btn_scan)
-        layout.add_widget(btn_load)
-        self.add_widget(layout)
+KV = """
+ScreenManager:
+    HomeScreen:
+    CameraScreen:
+    ImageScreen:
 
-    def go_to_scan(self, instance):
-        self.manager.current = 'scanner'
+<HomeScreen>:
+    name: "home"
+    BoxLayout:
+        orientation: "vertical"
+        padding: "24dp"
+        spacing: "18dp"
+        canvas.before:
+            Color:
+                rgba: 0.055, 0.075, 0.10, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        Label:
+            text: "OM EL KHIR"
+            font_size: "30sp"
+            bold: True
+            color: 0.88, 0.78, 0.53, 1
+            size_hint_y: None
+            height: "64dp"
+        Label:
+            text: "Observation et documentation des signes"
+            font_size: "16sp"
+            color: 0.88, 0.90, 0.93, 1
+            size_hint_y: None
+            height: "48dp"
+        Widget:
+        Button:
+            text: "OUVRIR LA CAMÉRA"
+            size_hint_y: None
+            height: "54dp"
+            background_normal: ""
+            background_color: 0.20, 0.35, 0.43, 1
+            on_release: app.open_camera()
+        Button:
+            text: "IMPORTER UNE PHOTO"
+            size_hint_y: None
+            height: "54dp"
+            background_normal: ""
+            background_color: 0.35, 0.31, 0.22, 1
+            on_release: app.open_image_picker()
+        Label:
+            text: "Version de démarrage — moteur d'analyse à construire"
+            font_size: "12sp"
+            color: 0.62, 0.67, 0.72, 1
+            size_hint_y: None
+            height: "36dp"
 
-    def go_to_load(self, instance):
-        self.manager.current = 'loader'
+<CameraScreen>:
+    name: "camera"
+    BoxLayout:
+        orientation: "vertical"
+        padding: "12dp"
+        spacing: "10dp"
+        Label:
+            text: "APERÇU CAMÉRA"
+            size_hint_y: None
+            height: "42dp"
+            bold: True
+        Camera:
+            id: camera_preview
+            resolution: (1280, 720)
+            play: True
+        Button:
+            text: "RETOUR"
+            size_hint_y: None
+            height: "50dp"
+            on_release: app.close_camera()
 
-class ScannerScreen(Screen):
-    def on_enter(self):
-        layout = BoxLayout(orientation='vertical')
-        self.cam = Camera(play=True, resolution=(640, 480))
-        btn_back = Button(text="BACK TO MENU", size_hint_y=0.2)
-        btn_back.bind(on_press=self.go_back)
-        layout.add_widget(self.cam)
-        layout.add_widget(btn_back)
-        self.add_widget(layout)
+<ImageScreen>:
+    name: "image"
+    BoxLayout:
+        orientation: "vertical"
+        padding: "12dp"
+        spacing: "10dp"
+        Label:
+            text: "PHOTO SÉLECTIONNÉE"
+            size_hint_y: None
+            height: "42dp"
+            bold: True
+        Image:
+            id: selected_image
+            source: root.image_path
+            fit_mode: "contain"
+        Label:
+            text: root.status_text
+            size_hint_y: None
+            height: "44dp"
+            text_size: self.width, None
+            halign: "center"
+        Button:
+            text: "RETOUR À L'ACCUEIL"
+            size_hint_y: None
+            height: "50dp"
+            on_release: app.go_home()
+"""
 
-    def go_back(self, instance):
-        self.cam.play = False
-        self.manager.current = 'menu'
+class HomeScreen(Screen):
+    pass
 
-class LoaderScreen(Screen):
-    def on_enter(self):
-        layout = BoxLayout(orientation='vertical')
-        file_chooser = FileChooserIconView()
-        btn_back = Button(text="BACK TO MENU", size_hint_y=0.1)
-        btn_back.bind(on_press=self.go_back)
-        layout.add_widget(file_chooser)
-        layout.add_widget(btn_back)
-        self.add_widget(layout)
 
-    def go_back(self, instance):
-        self.manager.current = 'menu'
+class CameraScreen(Screen):
+    pass
+
+
+class ImageScreen(Screen):
+    image_path = StringProperty("")
+    status_text = StringProperty(
+        "L'image est chargée. L'analyse scientifique sera ajoutée dans une prochaine étape."
+    )
+
 
 class OmElkhirApp(App):
     def build(self):
-        sm = ScreenManager()
-        sm.add_widget(MenuScreen(name='menu'))
-        sm.add_widget(ScannerScreen(name='scanner'))
-        sm.add_widget(LoaderScreen(name='loader'))
-        return sm
+        self.title = "OM EL KHIR"
+        root = Builder.load_string(KV)
+        return root
 
-if __name__ == '__main__':
+    def on_start(self):
+        if platform == "android":
+            try:
+                from android.permissions import Permission, request_permissions
+                request_permissions([Permission.CAMERA])
+            except Exception:
+                # L'application reste utilisable même si la demande échoue.
+                pass
+
+    def open_camera(self):
+        self.root.current = "camera"
+
+    def close_camera(self):
+        camera_screen = self.root.get_screen("camera")
+        camera_screen.ids.camera_preview.play = False
+        self.root.current = "home"
+
+    def open_image_picker(self):
+        try:
+            from plyer import filechooser
+            filechooser.open_file(
+                on_selection=self.on_image_selected,
+                filters=[("Images", "*.png", "*.jpg", "*.jpeg", "*.webp")]
+            )
+        except Exception as exc:
+            image_screen = self.root.get_screen("image")
+            image_screen.status_text = "Sélecteur de fichiers indisponible : " + str(exc)
+            self.root.current = "image"
+
+    def on_image_selected(self, selection):
+        if not selection:
+            return
+        path = selection[0]
+        image_screen = self.root.get_screen("image")
+        image_screen.image_path = path
+        image_screen.status_text = (
+            "Photo importée. Aucune interprétation automatique n'est encore activée."
+        )
+        self.root.current = "image"
+
+    def go_home(self):
+        self.root.current = "home"
+
+
+if __name__ == "__main__":
     OmElkhirApp().run()
-"""
-with open('main.py', 'w') as f:
-    f.write(main_py_content)
-
-# 3. CONFIGURE PERMISSIONS (CRITICAL)
-!buildozer init
-!sed -i 's/#android.permissions = PACKAGE_NAME.PERMISSION/android.permissions = CAMERA, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE/' buildozer.spec
-!sed -i 's/requirements = python3,kivy/requirements = python3,kivy,opencv,numpy/' buildozer.spec
-
-# 4. FINAL BUILD
-!buildozer -v android debug
