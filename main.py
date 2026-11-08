@@ -10,6 +10,7 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.properties import StringProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.camera import Camera  # Register Camera widget for the KV layout
 from kivy.uix.image import Image
 from kivy.utils import platform
 
